@@ -52,13 +52,10 @@ userSchema.methods.checkPassword = async function(candidatePassword,userPassword
     return bcrypt.compare(candidatePassword,userPassword);
 }
 
-userSchema.methods.createOtp = async function(token){
-    const otpHash = crypto.createHash('sha256').update(token).digest('hex');
-    const otp = otpHash.substring(0,6);
+userSchema.methods.createOtp = async function(){
+    const otp = Math.floor(100000 + Math.random() *90000);
     return otp
 }
-
-
 
 const User = new mongoose.model('user',userSchema);
 

@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./../utils/email');
+const { promisify } = require('util');
 
 const createToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
@@ -56,7 +57,7 @@ exports.login = async(req,res) => {
         }
         
         const jwtToken = createToken(user._id);
-        const otp = await user.createOtp(jwtToken);
+        const otp = await user.createOtp();
 
 
         const message = `Here is your 6 digit otp for login : ${otp}`;
@@ -94,6 +95,16 @@ exports.protect = async (req,res,next)=> {
         return res.status(401).json({
             status: 'Failed',
             message: 'User is not authorized!!'
+        })
+    }
+
+    const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET);
+    
+    const user = await User.findById(decoded.id);
+    if(!user){
+        res.status(404).json({
+            status:'Failed',
+            message:'User doesnt exist!'
         })
     }
 
