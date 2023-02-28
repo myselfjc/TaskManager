@@ -36,7 +36,12 @@ const userSchema = new mongoose.Schema({
             return el === this.password
         }, 
         message: 'Password not matching!'
-    }}
+    }},
+    verified : {
+        type: Boolean,
+        default : false
+    },
+    otp : Number
 });
 
 userSchema.pre('save', async function(next){
@@ -53,7 +58,7 @@ userSchema.methods.checkPassword = async function(candidatePassword,userPassword
 }
 
 userSchema.methods.createOtp = async function(){
-    const otp = Math.floor(100000 + Math.random() *90000);
+    const otp = Math.floor(100000 + Math.random() * 90000);
     return otp
 }
 
