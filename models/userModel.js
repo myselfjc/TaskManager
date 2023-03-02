@@ -41,8 +41,14 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default : false
     },
-    otp : Number
-});
+    otp : Number,
+    tasks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task'
+        }
+    ]
+})
 
 userSchema.pre('save', async function(next){
     if(!this.isModified('password')) return next();

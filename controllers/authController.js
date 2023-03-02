@@ -76,6 +76,12 @@ exports.login = catchAsync(async (req, res, next) => {
     if (user.verified !== true) return next(new AppError('User is not verified! Please verify your email to login successfully!', 404));
 
     const jwtToken = createToken(user._id);
+    const cookieOptions = {
+        expires : new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        httpOnly : true
+    }
+    res.cookie("jwt",jwtToken,cookieOptions);
+    user.password = undefined;
 
 
     res.status(200).json({
@@ -103,6 +109,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id);
+    req.user = user;
 
     next();
 })

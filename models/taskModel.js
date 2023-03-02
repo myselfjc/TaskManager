@@ -18,6 +18,10 @@ const taskSchema = new mongoose.Schema({
             values: ['Completed','Incomplete'],
             message: 'status can be either Completed or Incompleted'
         }
+    },
+    user:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 });
 
