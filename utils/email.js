@@ -1,11 +1,12 @@
 const sgMail = require('@sendgrid/mail');
-const apiKey = "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" 
-sgMail.setApiKey(apiKey);
+require('dotenv').config({path:'./config.env'});
+
+sgMail.setApiKey(process.env.SEND_API_KEY);
 
 const sendEmail = (to, subject, text, html) => {
     const message = {
       to: to,
-      from: 'mongodb4038@gmail.com',
+      from: process.env.EMAIL_FROM,
       subject: subject,
       text: text,
       html: html
