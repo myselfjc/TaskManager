@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+var uniqueValidator = require('mongoose-unique-validator');
 
 const userSchema = new mongoose.Schema({
     firstName : {
@@ -48,7 +49,9 @@ const userSchema = new mongoose.Schema({
             ref: 'Task'
         }
     ]
-})
+});
+
+userSchema.plugin(uniqueValidator);
 
 userSchema.pre('save', async function(next){
     if(!this.isModified('password')) return next();
@@ -63,10 +66,6 @@ userSchema.methods.checkPassword = async function(candidatePassword,userPassword
     return bcrypt.compare(candidatePassword,userPassword);
 }
 
-userSchema.methods.createOtp = async function(){
-    const otp = Math.floor(100000 + Math.random() * 90000);
-    return otp
-}
 
 const User = new mongoose.model('user',userSchema);
 

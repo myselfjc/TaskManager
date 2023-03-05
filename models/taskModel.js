@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var uniqueValidator = require('mongoose-unique-validator');
 
 const taskSchema = new mongoose.Schema({
     date: {
@@ -19,11 +20,16 @@ const taskSchema = new mongoose.Schema({
             message: 'status can be either Completed or Incompleted'
         }
     },
+    sequence:{
+        type:Number
+    },
     user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }
 });
+
+taskSchema.plugin(uniqueValidator);
 
 const Task = mongoose.model('Task',taskSchema);
 

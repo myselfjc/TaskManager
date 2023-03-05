@@ -11,6 +11,7 @@ const createToken = (id) => {
 
 exports.signUp = catchAsync(async (req, res, next) => {
     const { firstName, lastName, email, password, confirmPassword } = req.body;
+
     const user = await User.create({
         firstName,
         lastName,
@@ -18,43 +19,43 @@ exports.signUp = catchAsync(async (req, res, next) => {
         password,
         confirmPassword
     })
-    const otp = await user.createOtp();
+
+    const otp = Math.floor(100000 + Math.random() * 90000);
     user.otp = otp;
     await user.save({validateBeforeSave : false});
 
 
-    const message = `Here is your 6 digit otp for login : ${otp}`;
-    await sendEmail({
-        email: user.email,
-        subject: 'OTP Verification',
-        message
-    });
+    const text = `Here is your 6 digit otp for login : ${otp}`;
+    const subject = `OTP for verification`;
+    const html = `<p>Your OTP verification code is ${otp}</p>`
+    
+    await sendEmail(email, subject, text, html);
 
     res.status(200).json({
         status: 'Success',
-        data: {
-            user
-        }
+        message: 'Signup successfull! Kindly go ahead and verify your OTP'
     })
 }
 )
 
 exports.verifyOtp = catchAsync(async (req, res, next) => {
-    const { email, password, otp } = req.body;
-    if (!email || !password || !otp) {
-        return next(new AppError('Please enter your email, password and OTP!', 404));
-    }
-    const user = await User.findOne({ email }).select('+password');
-    if (!user || !(await user.checkPassword(password, user.password))) {
-        return next(new AppError('User or password is incorrect!', 404));
-    }
+    const { email, otp } = req.body;
+
+    if (!email || !otp) return next(new AppError('Please enter your email and OTP!', 404));
+
+    const user = await User.findOne({ email });
+
+    if(!user) return next(new AppError('User doesnt exist!', 404));
+
     if (Number(otp) !== user.otp) {
         return next(new AppError('Wrong OTP entered!', 404));
     }
 
     user.verified = true;
     user.otp = undefined;
+
     await user.save({validateBeforeSave : false});
+
     res.status(200).json({
         status: 'Success',
         message: 'OTP verified successfully!'
@@ -63,16 +64,16 @@ exports.verifyOtp = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
     const { email, password } = req.body;
-    if (!email || !password) {
-        return next(new AppError('Please enter your email and password!', 404));
-    }
+
+    if (!email || !password) return next(new AppError('Please enter your email and password!', 404));
 
     const user = await User.findOne({ email }).select('+password');
-
 
     if (!user || !(await user.checkPassword(password, user.password))) {
         return next(new AppError('User or password is incorrect!', 404));
     }
+    user.password = undefined;
+
     if (user.verified !== true) return next(new AppError('User is not verified! Please verify your email to login successfully!', 404));
 
     const jwtToken = createToken(user._id);
@@ -81,14 +82,12 @@ exports.login = catchAsync(async (req, res, next) => {
         httpOnly : true
     }
     res.cookie("jwt",jwtToken,cookieOptions);
-    user.password = undefined;
-
-
+    
     res.status(200).json({
         status: 'Success',
         message: 'User successfully logged in',
-        token: jwtToken,
-        data: {
+        token:jwtToken,
+        data:{
             user
         }
     })
@@ -102,9 +101,7 @@ exports.protect = catchAsync(async (req, res, next) => {
         token = req.headers.authorization.split(" ")[1];
     }
 
-    if (!token) {
-        return next(new AppError('User is not authorized! Please Log in to continue', 404));
-    }
+    if (!token) return next(new AppError('User is not authorized! Please Log in to continue', 404));
 
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
