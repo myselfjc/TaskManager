@@ -8,16 +8,14 @@ const taskSchema = new mongoose.Schema({
     },
     task: {
         type: String,
-        required:true,
-        minlength: 10,
-        unique: true
+        required:true
     },
     status:{
         type:String,
         required: true,
         enum: {
             values: ['Completed','Incomplete'],
-            message: 'status can be either Completed or Incompleted'
+            message: 'status can be either Completed or Incomplete'
         }
     },
     sequence:{

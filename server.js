@@ -4,7 +4,9 @@ const mongoose = require('mongoose');
 
 dotenv.config({path:'./config.env'});
 
-mongoose.connect(process.env.DB_LOCAL).then(()=>console.log('DB Connected successfully!')).catch((err)=>console.log(`There is some Error in connecting to DB`));
+const DB = process.env.DB_CONN.replace('<PASSWORD>',process.env.DB_PASS)
+
+mongoose.connect(DB).then(()=>console.log('DB Connected successfully!')).catch((err)=>console.log(`There is some Error in connecting to DB`));
 
 
 
