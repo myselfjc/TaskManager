@@ -4,6 +4,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
 
+// Starting the app
 const app = express();
 app.use(express.json());
 
